@@ -1,49 +1,185 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>لوحة تحكم متطوعي صناع الحياة</title>
+    <title>إحصائيات جذب أسر صناع الحياة بالجامعات المصرية</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: #f4f6f9; color: #333; }
-        .header { background: #1877f2; color: white; padding: 25px; border-radius: 12px; margin-bottom: 25px; text-align: center; box-shadow: 0 4px 10px rgba(24, 119, 242, 0.2); }
-        .header h1 { margin: 0; font-size: 2rem; }
-        .header p { margin: 5px 0 0 0; opacity: 0.9; }
-        
+        /* تعريف متغيرات الألوان للـ Light و Dark Mode */
+        :root {
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --text-muted: #666666;
+            --primary-color: #1877f2;
+            --header-bg: linear-gradient(135deg, #1877f2, #0056b3);
+            --border-color: #eef2f5;
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        [data-theme="dark"] {
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --text-color: #f5f5f5;
+            --text-muted: #aaaaaa;
+            --primary-color: #3a86ff;
+            --header-bg: linear-gradient(135deg, #1e1e1e, #2d2d2d);
+            --border-color: #333333;
+            --shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 0; 
+            padding: 20px; 
+            background-color: var(--bg-color); 
+            color: var(--text-color);
+            transition: all 0.3s ease;
+        }
+
+        /* رأس الصفحة (Header) */
+        .header { 
+            background: var(--header-bg); 
+            color: white; 
+            padding: 25px; 
+            border-radius: 16px; 
+            margin-bottom: 25px; 
+            text-align: center; 
+            box-shadow: var(--shadow);
+            position: relative;
+        }
+        .header h1 { margin: 0; font-size: 1.8rem; }
+        .header p { margin: 8px 0 0 0; opacity: 0.9; font-size: 1rem; }
+
+        /* زر تحويل المظهر (Dark Mode Toggle) */
+        .theme-toggle-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            font-family: inherit;
+            transition: background 0.3s ease;
+        }
+        .theme-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         /* كروت الأرقام السريعة */
-        .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 25px; }
-        .stat-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border-top: 5px solid #1877f2; }
-        .stat-card h3 { margin: 0; color: #666; font-size: 1.1rem; }
-        .stat-card .number { font-size: 2.5rem; font-weight: bold; color: #1877f2; margin-top: 10px; }
+        .stats-row { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+            gap: 20px; 
+            margin-bottom: 25px; 
+        }
+        .stat-card { 
+            background: var(--card-bg); 
+            padding: 20px; 
+            border-radius: 16px; 
+            text-align: center; 
+            box-shadow: var(--shadow); 
+            border-top: 5px solid var(--primary-color);
+            transition: transform 0.3s ease, background-color 0.3s ease;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 { margin: 0; color: var(--text-muted); font-size: 1.1rem; }
+        .stat-card .number { font-size: 2.8rem; font-weight: bold; color: var(--primary-color); margin-top: 10px; }
         
+        /* قائمة التنقل بين الصفحات (Tabs) */
+        .tabs-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .tab-btn {
+            background: var(--card-bg);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 12px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            box-shadow: var(--shadow);
+            transition: all 0.3s ease;
+        }
+        .tab-btn.active {
+            background: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+        .tab-btn:hover:not(.active) {
+            transform: scale(1.05);
+            color: var(--text-color);
+        }
+
+        /* محتوى الصفحات */
+        .page-content {
+            display: none; /* مخفي افتراضياً */
+            animation: fadeIn 0.5s ease;
+        }
+        .page-content.active {
+            display: block; /* يظهر النشط فقط */
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         /* شبكة الرسومات البيانية */
-        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; }
-        .chart-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; flex-direction: column; align-items: center; }
-        .chart-box h3 { margin-top: 0; width: 100%; text-align: center; color: #222; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; font-size: 1.2rem; }
-        .chart-container { position: relative; width: 100%; height: 280px; }
+        .dashboard-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); 
+            gap: 25px; 
+        }
+        .chart-box { 
+            background: var(--card-bg); 
+            padding: 25px; 
+            border-radius: 16px; 
+            box-shadow: var(--shadow); 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center;
+            border: 1px solid var(--border-color);
+            transition: background-color 0.3s ease;
+        }
+        .chart-box h3 { 
+            margin-top: 0; 
+            width: 100%; 
+            text-align: center; 
+            color: var(--text-color); 
+            border-bottom: 2px solid var(--border-color); 
+            padding-bottom: 12px; 
+            font-size: 1.2rem; 
+        }
+        .chart-container { position: relative; width: 100%; height: 320px; }
         
-        /* الرسومات العريضة */
+        /* الرسوم البيانية العريضة */
         .full-width { grid-column: span 2; }
         
-        /* صندوق المواهب */
-        .talents-box { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); grid-column: span 2; }
-        .talents-box h3 { margin-top: 0; border-bottom: 2px solid #f0f2f5; padding-bottom: 12px; }
-        .tags-container { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
-        .tag { background: #e7f3ff; color: #1877f2; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; font-weight: 500; }
-        
-        @media (max-width: 768px) {
+        @media (max-width: 900px) {
             .dashboard-grid { grid-template-columns: 1fr; }
             .full-width { grid-column: span 1; }
-            .talents-box { grid-column: span 1; }
+            .tabs-container { flex-direction: column; align-items: stretch; }
         }
     </style>
 </head>
 <body>
 
     <div class="header">
-        <h1>لوحة تحكم متطوعي صناع الحياة (مرحلة الجذب)</h1>
-        <p>تحليل إحصائي آمن وتلقائي للبيانات الحقيقية</p>
+        <button class="theme-toggle-btn" id="themeToggleBtn">وضع الليل 🌙</button>
+        <h1 id="mainTitle">إحصائيات جذب أسر صناع الحياة بالجامعات المصرية</h1>
+        <p>تحليل إحصائي تفاعلي حي ومباشر لقاعدة البيانات</p>
     </div>
 
     <div class="stats-row">
@@ -61,71 +197,73 @@
         </div>
     </div>
 
-    <div class="dashboard-grid">
-        
-        <div class="chart-box">
-            <h3>توزيع الفئات العمرية</h3>
-            <div class="chart-container">
-                <canvas id="ageChart"></canvas>
+    <div class="tabs-container">
+        <button class="tab-btn active" onclick="switchPage('page1')">الصفحة 1: البيانات الشخصية والديموغرافية</button>
+        <button class="tab-btn" onclick="switchPage('page2')">الصفحة 2: الخلفية الدراسية والمهنية</button>
+        <button class="tab-btn" onclick="switchPage('page3')">الصفحة 3: التوزيع الجغرافي والجامعي</button>
+    </div>
+
+    <div id="page1" class="page-content active">
+        <div class="dashboard-grid">
+            <div class="chart-box">
+                <h3>توزيع الفئات العمرية</h3>
+                <div class="chart-container">
+                    <canvas id="ageChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h3>نسبة المتطوعين حسب النوع</h3>
+                <div class="chart-container">
+                    <canvas id="genderChart"></canvas>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="chart-box">
-            <h3>نسبة المتطوعين حسب النوع</h3>
-            <div class="chart-container">
-                <canvas id="genderChart"></canvas>
+    <div id="page2" class="page-content">
+        <div class="dashboard-grid">
+            <div class="chart-box">
+                <h3>المرحلة الدراسية للمتقدمين</h3>
+                <div class="chart-container">
+                    <canvas id="eduStageChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box">
+                <h3>توزيع المتطوعين حسب السنين الدراسية</h3>
+                <div class="chart-container">
+                    <canvas id="academicYearChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box full-width">
+                <h3>توزيع مجالات الدراسة والكليات الحالية للمتطوعين (أعلى 10)</h3>
+                <div class="chart-container" style="height: 380px;">
+                    <canvas id="currentEduChart"></canvas>
+                </div>
             </div>
         </div>
+    </div>
 
-        <div class="chart-box">
-            <h3>المرحلة الدراسية للمتقدمين</h3>
-            <div class="chart-container">
-                <canvas id="eduStageChart"></canvas>
+    <div id="page3" class="page-content">
+        <div class="dashboard-grid">
+            <div class="chart-box full-width">
+                <h3>الجامعة المرغوب التطوع بفرعها</h3>
+                <div class="chart-container">
+                    <canvas id="desiredUniChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box full-width">
+                <h3>توزيع المتطوعين حسب المحافظة</h3>
+                <div class="chart-container">
+                    <canvas id="govChart"></canvas>
+                </div>
+            </div>
+            <div class="chart-box full-width">
+                <h3>كيف عرفت عن مؤسسة صناع الحياة؟</h3>
+                <div class="chart-container">
+                    <canvas id="howDidYouKnowChart"></canvas>
+                </div>
             </div>
         </div>
-
-        <div class="chart-box">
-            <h3>توزيع المتطوعين حسب السنين الدراسية</h3>
-            <div class="chart-container">
-                <canvas id="academicYearChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-box full-width">
-            <h3>كيف عرفت عن مؤسسة صناع الحياة؟</h3>
-            <div class="chart-container">
-                <canvas id="howDidYouKnowChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-box full-width">
-            <h3>الجامعة المرغوب التطوع بفرعها</h3>
-            <div class="chart-container">
-                <canvas id="desiredUniChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-box full-width">
-            <h3>توزيع المتطوعين حسب المحافظة</h3>
-            <div class="chart-container">
-                <canvas id="govChart"></canvas>
-            </div>
-        </div>
-
-        <div class="chart-box full-width">
-            <h3>توزيع مجالات الدراسة والكليات الحالية للمتطوعين (أعلى 10)</h3>
-            <div class="chart-container" style="height: 350px;">
-                <canvas id="currentEduChart"></canvas>
-            </div>
-        </div>
-
-        <div class="talents-box">
-            <h3>أبرز المواهب والمهارات المذكورة</h3>
-            <div id="talentsContainer" class="tags-container">
-                <span class="tag">جاري تحميل المواهب...</span>
-            </div>
-        </div>
-
     </div>
 
     <script src="app.js"></script>
