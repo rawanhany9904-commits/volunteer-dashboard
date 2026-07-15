@@ -20,26 +20,28 @@ function switchPage(pageId) {
 
 // 2. نظام الـ Dark & Light Mode المتكامل مع الرسوم البيانية
 const themeToggleBtn = document.getElementById("themeToggleBtn");
-themeToggleBtn.addEventListener("click", () => {
-    const currentTheme = document.documentElement.getAttribute("data-theme");
-    let newTheme = "light";
-    
-    if (currentTheme === "light") {
-        newTheme = "dark";
-        themeToggleBtn.innerText = "وضع النهار ☀️";
-    } else {
-        newTheme = "light";
-        themeToggleBtn.innerText = "وضع الليل 🌙";
-    }
-    
-    document.documentElement.setAttribute("data-theme", newTheme);
-    
-    // إعادة رسم التشارتس بخصائص الثيم الجديد حتى تظهر النصوص بوضوح
-    if (globalData) {
-        destroyAllCharts();
-        renderAllCharts(globalData, newTheme);
-    }
-});
+if (themeToggleBtn) {
+    themeToggleBtn.addEventListener("click", () => {
+        const currentTheme = document.documentElement.getAttribute("data-theme");
+        let newTheme = "light";
+        
+        if (currentTheme === "light") {
+            newTheme = "dark";
+            themeToggleBtn.innerText = "وضع النهار ☀️";
+        } else {
+            newTheme = "light";
+            themeToggleBtn.innerText = "وضع الليل 🌙";
+        }
+        
+        document.documentElement.setAttribute("data-theme", newTheme);
+        
+        // إعادة رسم التشارتس بخصائص الثيم الجديد حتى تظهر النصوص بوضوح
+        if (globalData) {
+            destroyAllCharts();
+            renderAllCharts(globalData, newTheme);
+        }
+    });
+}
 
 function destroyAllCharts() {
     Object.keys(charts).forEach(key => {
@@ -184,7 +186,7 @@ function renderAllCharts(data, theme) {
         data: {
             labels: Object.keys(data.desiredUni),
             datasets: [{
-                label: 'الرغبة في الالتحاق بالفرع',
+                label: 'الرغبة في الالتجاق بالفرع',
                 data: Object.values(data.desiredUni),
                 backgroundColor: '#ff6384'
             }]
@@ -207,50 +209,18 @@ function renderAllCharts(data, theme) {
     });
 
     // 8. مصدر المعرفة (Horizontal Bar)
-    // دالة تهيئة تشارت كيف عرفت عن المؤسسة
-function initHowDidYouKnowChart(data) {
-  const ctx = document.getElementById('howDidYouKnowChart').getContext('2d');
-  
-  // المسميات الجديدة الموحدة تماماً كما يرسلها الـ Apps Script
-  const labels = [
-    "سوشيال ميديا",
-    "الأصدقاء والمعارف",
-    "إعلانات ممولة",
-    "حملات الشارع والتعريف",
-    "أنشطة وفعاليات سابقة",
-    "أخرى / غير ذلك"
-  ];
-  
-  // قراءة الأرقام القادمة من الـ API ومطابقتها
-  const chartData = labels.map(label => data[label] || 0);
-
-  if (window.howDidYouKnowChartInstance) {
-    window.howDidYouKnowChartInstance.destroy();
-  }
-
-  window.howDidYouKnowChartInstance = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: labels,
-      datasets: [{
-        label: 'عدد المتقدمين عبر هذه القناة',
-        data: chartData,
-        backgroundColor: '#4db6ac',
-        borderColor: '#00897b',
-        borderWidth: 1
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: { stepSize: 1 }
-        }
-      }
-    }
-  });
+    charts.howDidYouKnow = new Chart(document.getElementById("howDidYouKnowChart"), {
+        type: 'bar',
+        data: {
+            labels: Object.keys(data.howDidYouKnow),
+            datasets: [{
+                label: 'عدد المتقدمين عبر هذه القناة',
+                data: Object.values(data.howDidYouKnow),
+                backgroundColor: '#4bc0c0'
+            }]
+        },
+        options: { ...chartOptions, indexAxis: 'y' }
+    });
 }
 
 // تحميل البيانات فور التشغيل
