@@ -207,18 +207,50 @@ function renderAllCharts(data, theme) {
     });
 
     // 8. مصدر المعرفة (Horizontal Bar)
-    charts.howDidYouKnow = new Chart(document.getElementById("howDidYouKnowChart"), {
-        type: 'bar',
-        data: {
-            labels: Object.keys(data.howDidYouKnow),
-            datasets: [{
-                label: 'عدد المتقدمين عبر هذه القناة',
-                data: Object.values(data.howDidYouKnow),
-                backgroundColor: '#4bc0c0'
-            }]
-        },
-        options: { ...chartOptions, indexAxis: 'y' }
-    });
+    // دالة تهيئة تشارت كيف عرفت عن المؤسسة
+function initHowDidYouKnowChart(data) {
+  const ctx = document.getElementById('howDidYouKnowChart').getContext('2d');
+  
+  // المسميات الجديدة الموحدة تماماً كما يرسلها الـ Apps Script
+  const labels = [
+    "سوشيال ميديا",
+    "الأصدقاء والمعارف",
+    "إعلانات ممولة",
+    "حملات الشارع والتعريف",
+    "أنشطة وفعاليات سابقة",
+    "أخرى / غير ذلك"
+  ];
+  
+  // قراءة الأرقام القادمة من الـ API ومطابقتها
+  const chartData = labels.map(label => data[label] || 0);
+
+  if (window.howDidYouKnowChartInstance) {
+    window.howDidYouKnowChartInstance.destroy();
+  }
+
+  window.howDidYouKnowChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'عدد المتقدمين عبر هذه القناة',
+        data: chartData,
+        backgroundColor: '#4db6ac',
+        borderColor: '#00897b',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1 }
+        }
+      }
+    }
+  });
 }
 
 // تحميل البيانات فور التشغيل
