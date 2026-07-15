@@ -45,8 +45,8 @@ function destroyAllCharts() {
     });
 }
 
-// خيارات لتنسيق ألوان النصوص والمحاور داخل الرسم البياني وتفعيل ظهور الأرقام على الأعمدة
-function getChartOptions(theme, isHorizontal = false) {
+// خيارات لتنسيق ألوان النصوص والمحاور وتفعيل ظهور الأرقام الصحيحة على الأعمدة
+function getChartOptions(theme) {
     const textColor = theme === 'dark' ? '#aaaaaa' : '#666666';
     const gridColor = theme === 'dark' ? '#333333' : '#eef2f5';
     
@@ -57,9 +57,8 @@ function getChartOptions(theme, isHorizontal = false) {
             legend: {
                 labels: { color: textColor, font: { family: 'Segoe UI', size: 11 } }
             },
-            // دالة لإظهار القيم كأرقام مباشرة فوق الأعمدة
             tooltip: {
-                enabled: true
+                enabled: true // يظهر لكِ الرقم الدقيق بالكامل فور الوقوف بالماوس على أي عمود
             }
         },
         scales: {
@@ -69,7 +68,17 @@ function getChartOptions(theme, isHorizontal = false) {
             },
             y: {
                 grid: { color: gridColor },
-                ticks: { color: textColor, font: { family: 'Segoe UI', size: 10 } }
+                beginAtZero: true,
+                ticks: { 
+                    color: textColor, 
+                    font: { family: 'Segoe UI', size: 10 },
+                    // لضمان ظهور الأرقام كقيم صحيحة دائماً (10، 20، إلخ) وتجنب الكسور العشرية
+                    callback: function(value) {
+                        if (value % 1 === 0) {
+                            return value;
+                        }
+                    }
+                }
             }
         }
     };
