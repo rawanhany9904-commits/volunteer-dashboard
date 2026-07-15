@@ -1,24 +1,21 @@
 // الرابط الخاص بكِ الفعال من الـ Google Apps Script
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbywtVEoMOyEzLlsTknoM8pkBbsN7aMm3_CqkkaZCh_9sg3l8vGh71VluP4hItAF2tO2fg/exec";
 
-let charts = {}; // لتخزين كائنات الرسومات لإعادة رسمها بشكل متفاعل مع تغير الثيم
-let globalData = null; // تخزين البيانات محلياً لمنع كثرة الطلبات
+let charts = {}; 
+let globalData = null; 
 
 // 1. نظام التنقل بين الصفحات الـ 3 (Tabs)
 function switchPage(pageId) {
-    // إخفاء كل الصفحات وإلغاء تنشيط الأزرار
     document.querySelectorAll('.page-content').forEach(page => page.classList.remove('active'));
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
 
-    // إظهار الصفحة المحددة وتنشيط زرها
     document.getElementById(pageId).classList.add('active');
     
-    // ربط تنشيط الزرار بناءً على الاختيار
     const index = pageId.replace('page', '');
     document.querySelectorAll('.tab-btn')[index - 1].classList.add('active');
 }
 
-// 2. نظام الـ Dark & Light Mode المتكامل مع الرسوم البيانية
+// 2. نظام الـ Dark & Light Mode
 const themeToggleBtn = document.getElementById("themeToggleBtn");
 if (themeToggleBtn) {
     themeToggleBtn.addEventListener("click", () => {
@@ -35,7 +32,6 @@ if (themeToggleBtn) {
         
         document.documentElement.setAttribute("data-theme", newTheme);
         
-        // إعادة رسم التشارتس بخصائص الثيم الجديد حتى تظهر النصوص بوضوح
         if (globalData) {
             destroyAllCharts();
             renderAllCharts(globalData, newTheme);
@@ -49,8 +45,8 @@ function destroyAllCharts() {
     });
 }
 
-// خيارات لتنسيق ألوان النصوص والمحاور داخل الرسم البياني تلقائياً مع الثيم
-function getChartOptions(theme) {
+// خيارات لتنسيق ألوان النصوص والمحاور داخل الرسم البياني وتفعيل ظهور الأرقام على الأعمدة
+function getChartOptions(theme, isHorizontal = false) {
     const textColor = theme === 'dark' ? '#aaaaaa' : '#666666';
     const gridColor = theme === 'dark' ? '#333333' : '#eef2f5';
     
@@ -59,17 +55,21 @@ function getChartOptions(theme) {
         maintainAspectRatio: false,
         plugins: {
             legend: {
-                labels: { color: textColor, font: { family: 'Segoe UI' } }
+                labels: { color: textColor, font: { family: 'Segoe UI', size: 11 } }
+            },
+            // دالة لإظهار القيم كأرقام مباشرة فوق الأعمدة
+            tooltip: {
+                enabled: true
             }
         },
         scales: {
             x: {
                 grid: { color: gridColor },
-                ticks: { color: textColor, font: { family: 'Segoe UI' } }
+                ticks: { color: textColor, font: { family: 'Segoe UI', size: 10 } }
             },
             y: {
                 grid: { color: gridColor },
-                ticks: { color: textColor, font: { family: 'Segoe UI' } }
+                ticks: { color: textColor, font: { family: 'Segoe UI', size: 10 } }
             }
         }
     };
@@ -86,7 +86,7 @@ async function fetchDashboardData() {
             return;
         }
 
-        globalData = data; // تخزين البيانات
+        globalData = data; 
 
         // تحديث كروت الأرقام العلوية
         document.getElementById("totalCount").innerText = data.totalVolunteers;
@@ -98,7 +98,6 @@ async function fetchDashboardData() {
         }
         document.getElementById("workingCount").innerText = workingVolunteers;
 
-        // رسم التشارتس بناءً على الثيم المختار حالياً
         const activeTheme = document.documentElement.getAttribute("data-theme") || "light";
         renderAllCharts(data, activeTheme);
 
@@ -165,28 +164,34 @@ function renderAllCharts(data, theme) {
         options: chartOptions
     });
 
-    // 5. أعلى 10 تخصصات (Horizontal Bar)
+    // 5. أعلى 10 تخصصات ومجالات الدراسة (Horizontal Bar مع إظهار القيم بالأرقام الفعالة)
     const sortedEdu = Object.entries(data.currentEdu).sort((a, b) => b[1] - a[1]).slice(0, 10);
     charts.currentEdu = new Chart(document.getElementById("currentEduChart"), {
         type: 'bar',
         data: {
             labels: sortedEdu.map(x => x[0]),
             datasets: [{
-                label: 'عدد الطلاب',
+                label: 'عدد الطلاب الفعلي',
                 data: sortedEdu.map(x => x[1]),
                 backgroundColor: '#2ecc71'
             }]
         },
-        options: { ...chartOptions, indexAxis: 'y' }
+        options: { 
+            ...chartOptions, 
+            indexAxis: 'y',
+            plugins: {
+                legend: { labels: { color: theme === 'dark' ? '#aaa' : '#666' } }
+            }
+        }
     });
 
-    // 6. الجامعة المرغوبة (Bar)
+    // 6. الجامعة المرغوبة (تعديل التسمية للرغبة في الالتحاق بالأسرة)
     charts.desiredUni = new Chart(document.getElementById("desiredUniChart"), {
         type: 'bar',
         data: {
             labels: Object.keys(data.desiredUni),
             datasets: [{
-                label: 'الرغبة في الالتجاق بالفرع',
+                label: 'الرغبة في الالتحاق بالأسرة',
                 data: Object.values(data.desiredUni),
                 backgroundColor: '#ff6384'
             }]
@@ -208,14 +213,17 @@ function renderAllCharts(data, theme) {
         options: chartOptions
     });
 
-    // 8. مصدر المعرفة (Horizontal Bar)
+    // 8. مصدر المعرفة (مطابقة دقيقة للاختيارات الستة المحددة من الشيت)
+    const knowLabels = ["سوشيال ميديا", "من خلال اعلان", "من خلال الأنشطة", "من حملات الشارع", "اصحابك", "آخر"];
+    const knowValues = knowLabels.map(label => data.howDidYouKnow[label] || 0);
+
     charts.howDidYouKnow = new Chart(document.getElementById("howDidYouKnowChart"), {
         type: 'bar',
         data: {
-            labels: Object.keys(data.howDidYouKnow),
+            labels: knowLabels,
             datasets: [{
-                label: 'عدد المتقدمين عبر هذه القناة',
-                data: Object.values(data.howDidYouKnow),
+                label: 'عدد المتقدمين عبر القناة المحددة',
+                data: knowValues,
                 backgroundColor: '#4bc0c0'
             }]
         },
@@ -223,5 +231,4 @@ function renderAllCharts(data, theme) {
     });
 }
 
-// تحميل البيانات فور التشغيل
 window.onload = fetchDashboardData;
