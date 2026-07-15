@@ -173,7 +173,7 @@ function renderAllCharts(data, theme) {
         options: chartOptions
     });
 
-    // 5. أعلى 10 تخصصات ومجالات الدراسة (Horizontal Bar مع إظهار القيم بالأرقام الفعالة)
+    // 5. أعلى 10 تخصصات ومجالات الدراسة (Horizontal Bar)
     const sortedEdu = Object.entries(data.currentEdu).sort((a, b) => b[1] - a[1]).slice(0, 10);
     charts.currentEdu = new Chart(document.getElementById("currentEduChart"), {
         type: 'bar',
@@ -194,7 +194,7 @@ function renderAllCharts(data, theme) {
         }
     });
 
-    // 6. الجامعة المرغوبة (تعديل التسمية للرغبة في الالتحاق بالأسرة)
+    // 6. الجامعة المرغوبة (الالتجاق بالأسرة)
     charts.desiredUni = new Chart(document.getElementById("desiredUniChart"), {
         type: 'bar',
         data: {
@@ -222,10 +222,8 @@ function renderAllCharts(data, theme) {
         options: chartOptions
     });
 
-    // 8. مصدر المعرفة (مطابقة الاختيارات الستة الفعالة وتجنب أي خطأ قراءة)
+    // 8. مصدر المعرفة (مطابقة الاختيارات الستة الفعالة)
     const knowLabels = ["سوشيال ميديا", "من خلال اعلان", "من خلال الأنشطة", "من حملات الشارع", "اصحابك", "آخر"];
-    
-    // قراءة البيانات بأمان، وفي حال لم تكن هناك قيمة نضع 0
     const knowValues = knowLabels.map(label => {
         if (data.howDidYouKnow && data.howDidYouKnow[label] !== undefined) {
             return data.howDidYouKnow[label];
@@ -245,5 +243,7 @@ function renderAllCharts(data, theme) {
         },
         options: { ...chartOptions, indexAxis: 'y' }
     });
+}
 
+// تحميل البيانات فور تشغيل الصفحة
 window.onload = fetchDashboardData;
