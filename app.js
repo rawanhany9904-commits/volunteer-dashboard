@@ -222,9 +222,16 @@ function renderAllCharts(data, theme) {
         options: chartOptions
     });
 
-    // 8. مصدر المعرفة (مطابقة دقيقة للاختيارات الستة المحددة من الشيت)
+    // 8. مصدر المعرفة (مطابقة الاختيارات الستة الفعالة وتجنب أي خطأ قراءة)
     const knowLabels = ["سوشيال ميديا", "من خلال اعلان", "من خلال الأنشطة", "من حملات الشارع", "اصحابك", "آخر"];
-    const knowValues = knowLabels.map(label => data.howDidYouKnow[label] || 0);
+    
+    // قراءة البيانات بأمان، وفي حال لم تكن هناك قيمة نضع 0
+    const knowValues = knowLabels.map(label => {
+        if (data.howDidYouKnow && data.howDidYouKnow[label] !== undefined) {
+            return data.howDidYouKnow[label];
+        }
+        return 0;
+    });
 
     charts.howDidYouKnow = new Chart(document.getElementById("howDidYouKnowChart"), {
         type: 'bar',
@@ -238,6 +245,5 @@ function renderAllCharts(data, theme) {
         },
         options: { ...chartOptions, indexAxis: 'y' }
     });
-}
 
 window.onload = fetchDashboardData;
